@@ -39,6 +39,7 @@ namespace VstsProjectDocumenter.DataStructures
         public DateTime StartDate { get; }
         public DateTime FinishDate { get; }
         public int Level {get; internal set;}
+        public string FullPath { get; internal set; }
 
         public static ImmutableList<AdopIteration> GetIterations(IEnumerable<WorkItemClassificationNode> nodes)
         {
@@ -49,17 +50,30 @@ namespace VstsProjectDocumenter.DataStructures
             // TODO: This could/should be done recursively.
             foreach (var nodeItem in nodes)
             {
+                string currentPath = nodeItem.Name;
+
                 try
                 {
                     foreach (var childNodeItem in nodeItem.Children)
                     {
-                        list.Add(new AdopIteration(childNodeItem) { Level = 1 });
+
+                        var currentAdopIteration = new AdopIteration(childNodeItem)
+                        {
+                            Level = 1,
+                            FullPath = currentPath + "\\" + childNodeItem.Name
+                        };
+
+                        list.Add(currentAdopIteration);
                         var children = childNodeItem?.Children;
                         if ((children is object))
                         {
                             foreach (var childChildNodeItem in children)
                             {
-                                list.Add(new AdopIteration(childChildNodeItem) { Level = 2 });
+                                list.Add(new AdopIteration(childChildNodeItem)
+                                {
+                                    Level = 2,
+                                    FullPath = currentAdopIteration.FullPath + "\\" + childChildNodeItem.Name
+                                });
                             }
                         }
                     }
